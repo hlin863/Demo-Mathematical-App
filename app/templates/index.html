@@ -13,7 +13,7 @@
         <nav class="topbar">
             <span class="badge">KS4 Mathematics</span>
             <span>Year 10/11</span>
-            <span>Geometry & Measures</span>
+            <span>Geometry &amp; Measures</span>
         </nav>
         <section class="hero-grid">
             <div class="hero-text">
@@ -35,11 +35,11 @@
             <p class="large">Can we calculate the height of a building without climbing it?</p>
             <div class="goal-strip">
                 <span>Label sides</span>
-                <span>→</span>
+                <span>&rarr;</span>
                 <span>Choose ratio</span>
-                <span>→</span>
+                <span>&rarr;</span>
                 <span>Calculate height</span>
-                <span>→</span>
+                <span>&rarr;</span>
                 <span>Explain answer</span>
             </div>
         </section>
@@ -61,7 +61,7 @@
             <div class="panel calculator">
                 <h2>Interactive example</h2>
                 <p>For a height problem, tangent links the opposite side to the adjacent side.</p>
-                <div class="formula">tan(θ) = opposite ÷ adjacent</div>
+                <div class="formula">tan(&theta;) = opposite &divide; adjacent</div>
                 <label>Distance from building, adjacent side / metres
                     <input id="distance" type="number" value="20" min="1" step="0.1" />
                 </label>
@@ -69,11 +69,14 @@
                     <input id="angle" type="number" value="35" min="1" max="89" step="0.1" />
                 </label>
                 <button id="calculateBtn">Calculate height</button>
-                <div id="result" class="result">h = 20 × tan(35°) ≈ 14.00 m</div>
+                <div id="result" class="result">h = 20 x tan(35 degrees) = 14.00 m</div>
             </div>
         </section>
 
-        <section class="panel practice-panel" id="gcse-practice" data-time-limit="{{ practice.time_limit_minutes }}">
+        <section class="panel practice-panel" id="gcse-practice"
+            data-time-limit="{{ practice.time_limit_minutes }}"
+            data-answer="{{ '%.1f'|format(practice.answer) }}"
+            data-unit="{{ practice.unit }}">
             <div class="practice-heading">
                 <div>
                     <p class="eyebrow">Timed independent practice</p>
@@ -83,7 +86,7 @@
 
                 <div class="timer-card">
                     <span class="timer-label">Time limit</span>
-                    <strong id="practiceTimer">{{ practice.time_limit_minutes }}:00</strong>
+                    <strong id="practiceTimer" aria-live="polite">{{ practice.time_limit_minutes }}:00</strong>
                     <button id="startPracticeBtn" type="button">Start timer</button>
                 </div>
             </div>
@@ -107,45 +110,46 @@
                     <button id="showWorkingBtn" class="secondary-btn" type="button">Show working</button>
                 </div>
 
-                <div id="practiceFeedback" class="result hidden"></div>
+                <div id="practiceFeedback" class="result hidden" aria-live="polite"></div>
+                <template id="practiceWorking">{{ practice.working }}</template>
             </article>
+        </section>
 
-            <section class="panel">
-                <h2>One-hour lesson plan</h2>
-                <div class="timeline">
-                    {% for step in lesson_steps %}
-                    <article class="timeline-card">
-                        <span class="time">{{ step.time }}</span>
-                        <h3>{{ step.title }}</h3>
-                        <p>{{ step.description }}</p>
-                        <small>{{ step.teacher_move }}</small>
-                    </article>
-                    {% endfor %}
-                </div>
-            </section>
+        <section class="panel">
+            <h2>One-hour lesson plan</h2>
+            <div class="timeline">
+                {% for step in lesson_steps %}
+                <article class="timeline-card">
+                    <span class="time">{{ step.time }}</span>
+                    <h3>{{ step.title }}</h3>
+                    <p>{{ step.description }}</p>
+                    <small>{{ step.teacher_move }}</small>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
 
-            <section class="two-col">
-                <div class="panel">
-                    <h2>Teacher modelling script</h2>
-                    <p>“We know the distance from the building is the adjacent side. The unknown height is the opposite
-                        side. Because tangent connects opposite and adjacent, I will use tan.”</p>
-                    <div class="worked">
-                        tan(35°) = h ÷ 20<br />
-                        h = 20 × tan(35°)<br />
-                        h ≈ 14.0 m
-                    </div>
+        <section class="two-col">
+            <div class="panel">
+                <h2>Teacher modelling script</h2>
+                <p>"We know the distance from the building is the adjacent side. The unknown height is the opposite
+                    side. Because tangent connects opposite and adjacent, I will use tan."</p>
+                <div class="worked">
+                    tan(35 degrees) = h / 20<br />
+                    h = 20 x tan(35 degrees)<br />
+                    h = 14.0 m
                 </div>
+            </div>
 
-                <div class="panel">
-                    <h2>Exit ticket</h2>
-                    <ol>
-                        <li>A person stands 12 m from a wall. The angle of elevation is 40°. Find the height of the
-                            wall.
-                        </li>
-                        <li>Explain how you decide whether to use sine, cosine or tangent.</li>
-                    </ol>
-                </div>
-            </section>
+            <div class="panel">
+                <h2>Exit ticket</h2>
+                <ol>
+                    <li>A person stands 12 m from a wall. The angle of elevation is 40 degrees. Find the height of the
+                        wall.</li>
+                    <li>Explain how you decide whether to use sine, cosine or tangent.</li>
+                </ol>
+            </div>
+        </section>
     </main>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

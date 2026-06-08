@@ -73,41 +73,79 @@
             </div>
         </section>
 
-        <section class="panel">
-            <h2>One-hour lesson plan</h2>
-            <div class="timeline">
-                {% for step in lesson_steps %}
-                <article class="timeline-card">
-                    <span class="time">{{ step.time }}</span>
-                    <h3>{{ step.title }}</h3>
-                    <p>{{ step.description }}</p>
-                    <small>{{ step.teacher_move }}</small>
-                </article>
-                {% endfor %}
-            </div>
-        </section>
+        <section class="panel practice-panel" id="gcse-practice" data-time-limit="{{ practice.time_limit_minutes }}">
+            <div class="practice-heading">
+                <div>
+                    <p class="eyebrow">Timed independent practice</p>
+                    <h2>{{ practice.title }}</h2>
+                    <p>{{ practice.teacher_note }}</p>
+                </div>
 
-        <section class="two-col">
-            <div class="panel">
-                <h2>Teacher modelling script</h2>
-                <p>“We know the distance from the building is the adjacent side. The unknown height is the opposite
-                    side. Because tangent connects opposite and adjacent, I will use tan.”</p>
-                <div class="worked">
-                    tan(35°) = h ÷ 20<br />
-                    h = 20 × tan(35°)<br />
-                    h ≈ 14.0 m
+                <div class="timer-card">
+                    <span class="timer-label">Time limit</span>
+                    <strong id="practiceTimer">{{ practice.time_limit_minutes }}:00</strong>
+                    <button id="startPracticeBtn" type="button">Start timer</button>
                 </div>
             </div>
 
-            <div class="panel">
-                <h2>Exit ticket</h2>
-                <ol>
-                    <li>A person stands 12 m from a wall. The angle of elevation is 40°. Find the height of the wall.
-                    </li>
-                    <li>Explain how you decide whether to use sine, cosine or tangent.</li>
-                </ol>
-            </div>
-        </section>
+            <article class="exam-card">
+                <div class="exam-meta">
+                    <span>{{ practice.tier }}</span>
+                    <span>{{ practice.marks }} marks</span>
+                    {% if practice.calculator %}<span>Calculator allowed</span>{% endif %}
+                </div>
+
+                <h3>Exam-style question</h3>
+                <p class="question-text">{{ practice.question }}</p>
+
+                <label>Your answer / {{ practice.unit }}
+                    <input id="practiceAnswer" type="number" step="0.1" placeholder="Enter height to 1 d.p." />
+                </label>
+
+                <div class="practice-actions">
+                    <button id="checkPracticeBtn" type="button">Check answer</button>
+                    <button id="showWorkingBtn" class="secondary-btn" type="button">Show working</button>
+                </div>
+
+                <div id="practiceFeedback" class="result hidden"></div>
+            </article>
+
+            <section class="panel">
+                <h2>One-hour lesson plan</h2>
+                <div class="timeline">
+                    {% for step in lesson_steps %}
+                    <article class="timeline-card">
+                        <span class="time">{{ step.time }}</span>
+                        <h3>{{ step.title }}</h3>
+                        <p>{{ step.description }}</p>
+                        <small>{{ step.teacher_move }}</small>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="two-col">
+                <div class="panel">
+                    <h2>Teacher modelling script</h2>
+                    <p>“We know the distance from the building is the adjacent side. The unknown height is the opposite
+                        side. Because tangent connects opposite and adjacent, I will use tan.”</p>
+                    <div class="worked">
+                        tan(35°) = h ÷ 20<br />
+                        h = 20 × tan(35°)<br />
+                        h ≈ 14.0 m
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Exit ticket</h2>
+                    <ol>
+                        <li>A person stands 12 m from a wall. The angle of elevation is 40°. Find the height of the
+                            wall.
+                        </li>
+                        <li>Explain how you decide whether to use sine, cosine or tangent.</li>
+                    </ol>
+                </div>
+            </section>
     </main>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

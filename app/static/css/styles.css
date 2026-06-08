@@ -10,7 +10,9 @@
     --card: rgba(255, 255, 255, 0.88);
 }
 
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -70,7 +72,8 @@ h1 {
     font-weight: 700;
 }
 
-.cta, button {
+.cta,
+button {
     display: inline-block;
     border: 0;
     border-radius: 999px;
@@ -83,7 +86,8 @@ h1 {
     cursor: pointer;
 }
 
-.hero-card, .panel {
+.hero-card,
+.panel {
     border: 1px solid rgba(8, 32, 74, 0.08);
     border-radius: 28px;
     background: var(--card);
@@ -115,7 +119,9 @@ h2 {
     font-size: 2rem;
 }
 
-h3 { color: var(--teal); }
+h3 {
+    color: var(--teal);
+}
 
 .large {
     font-size: 1.45rem;
@@ -141,9 +147,13 @@ h3 { color: var(--teal); }
     gap: 28px;
 }
 
-ul, ol { line-height: 1.75; }
+ul,
+ol {
+    line-height: 1.75;
+}
 
-.formula, .worked {
+.formula,
+.worked {
     margin: 18px 0;
     padding: 18px;
     border-left: 6px solid var(--orange);
@@ -166,6 +176,17 @@ input {
     border: 1px solid #cfd8e3;
     border-radius: 12px;
     font: inherit;
+}
+
+.practice-panel {
+    border: 2px solid rgba(244, 154, 36, 0.22);
+}
+
+.practice-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: flex-start;
 }
 
 .result {
@@ -199,7 +220,25 @@ input {
     font-weight: 800;
 }
 
-small { color: var(--muted); }
+.timer-card {
+    min-width: 180px;
+    padding: 18px;
+    border-radius: 20px;
+    text-align: center;
+    background: var(--navy);
+    color: #fff;
+}
+
+#practiceTimer {
+    display: block;
+    margin-bottom: 14px;
+    font-size: 2.35rem;
+    line-height: 1;
+}
+
+small {
+    color: var(--muted);
+}
 
 footer {
     padding: 30px 5vw;
@@ -208,8 +247,24 @@ footer {
 }
 
 @media (max-width: 900px) {
-    .hero-grid, .two-col, .timeline {
+
+    .hero-grid,
+    .two-col,
+    .timeline {
         grid-template-columns: 1fr;
     }
-    .hero { min-height: auto; }
+
+    .hero {
+        min-height: auto;
+    }
+}
+
+.correct-feedback {
+    background: #eaf8f0;
+    color: #145c35;
+}
+
+.retry-feedback {
+    background: #fff4e2;
+    color: #724600;
 }

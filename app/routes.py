@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 import math
+from .data import GCSE_PRACTICE, LESSON_STEPS
 
 main_bp = Blueprint("main", __name__)
 
@@ -23,12 +24,6 @@ LESSON_STEPS = [
         "teacher_move": "Think aloud: label sides, choose ratio, substitute, calculate."
     },
     {
-        "time": "25–40 min",
-        "title": "Guided practice",
-        "description": "Pupils complete missing-side questions with fading support.",
-        "teacher_move": "Circulate, question choices, and correct side-labelling errors."
-    },
-    {
         "time": "40–50 min",
         "title": "Pair application task",
         "description": "Estimate the height of a tree, wall or flagpole using a contextual problem.",
@@ -44,7 +39,11 @@ LESSON_STEPS = [
 
 @main_bp.route("/")
 def index():
-    return render_template("index.html", lesson_steps=LESSON_STEPS)
+    return render_template(
+        "index.html",
+        lesson_steps=LESSON_STEPS,
+        practice=GCSE_PRACTICE,
+    )
 
 @main_bp.route("/calculate", methods=["POST"])
 def calculate():
@@ -63,3 +62,17 @@ def calculate():
         })
     except (TypeError, ValueError):
         return jsonify({"error": "Please enter valid numbers."}), 400
+    
+@main_bp.route("/api/check-practice", methods=["POST"])
+def check_practice():
+    """Check the GCSE-style answer with a small tolerance for rounding."""
+    data = request.get_json(silent=True) or {}
+
+    try:
+        pupil_answer = float(data.get("answer"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Please enter a numerical answer."}), 400
+
+    expected = float(GCSE_PRACTICE["answer"])
+    tolerance = float(GCSE_PRACTICE["tolerance"])
+    is_correct = abs(pupil_answer - expected) <= tolerance

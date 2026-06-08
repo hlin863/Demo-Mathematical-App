@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KS4 Trigonometry Lesson</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+
+<body>
+    <header class="hero">
+        <nav class="topbar">
+            <span class="badge">KS4 Mathematics</span>
+            <span>Year 10/11</span>
+            <span>Geometry & Measures</span>
+        </nav>
+        <section class="hero-grid">
+            <div class="hero-text">
+                <p class="eyebrow">Right-angled trigonometry</p>
+                <h1>How tall is the building?</h1>
+                <p class="subtitle">Using trigonometric ratios to find missing heights.</p>
+                <a class="cta" href="#lesson">Start the lesson</a>
+            </div>
+            <div class="hero-card">
+                <img src="{{ url_for('static', filename='img/trig_building_slide.png') }}"
+                    alt="Building height trigonometry diagram showing 20 metres, 35 degrees and unknown height h" />
+            </div>
+        </section>
+    </header>
+
+    <main>
+        <section class="panel" id="lesson">
+            <h2>Lesson question</h2>
+            <p class="large">Can we calculate the height of a building without climbing it?</p>
+            <div class="goal-strip">
+                <span>Label sides</span>
+                <span>→</span>
+                <span>Choose ratio</span>
+                <span>→</span>
+                <span>Calculate height</span>
+                <span>→</span>
+                <span>Explain answer</span>
+            </div>
+        </section>
+
+        <section class="two-col">
+            <div class="panel">
+                <h2>Learning objective</h2>
+                <p>Pupils will learn to choose and apply sine, cosine or tangent to find a missing side in a
+                    right-angled triangle.</p>
+                <h3>Prior knowledge</h3>
+                <ul>
+                    <li>Right-angled triangles</li>
+                    <li>Hypotenuse, opposite and adjacent</li>
+                    <li>Basic ratio and calculator use</li>
+                    <li>Rearranging simple formulae</li>
+                </ul>
+            </div>
+
+            <div class="panel calculator">
+                <h2>Interactive example</h2>
+                <p>For a height problem, tangent links the opposite side to the adjacent side.</p>
+                <div class="formula">tan(θ) = opposite ÷ adjacent</div>
+                <label>Distance from building, adjacent side / metres
+                    <input id="distance" type="number" value="20" min="1" step="0.1" />
+                </label>
+                <label>Angle of elevation / degrees
+                    <input id="angle" type="number" value="35" min="1" max="89" step="0.1" />
+                </label>
+                <button id="calculateBtn">Calculate height</button>
+                <div id="result" class="result">h = 20 × tan(35°) ≈ 14.00 m</div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>One-hour lesson plan</h2>
+            <div class="timeline">
+                {% for step in lesson_steps %}
+                <article class="timeline-card">
+                    <span class="time">{{ step.time }}</span>
+                    <h3>{{ step.title }}</h3>
+                    <p>{{ step.description }}</p>
+                    <small>{{ step.teacher_move }}</small>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="two-col">
+            <div class="panel">
+                <h2>Teacher modelling script</h2>
+                <p>“We know the distance from the building is the adjacent side. The unknown height is the opposite
+                    side. Because tangent connects opposite and adjacent, I will use tan.”</p>
+                <div class="worked">
+                    tan(35°) = h ÷ 20<br />
+                    h = 20 × tan(35°)<br />
+                    h ≈ 14.0 m
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Exit ticket</h2>
+                <ol>
+                    <li>A person stands 12 m from a wall. The angle of elevation is 40°. Find the height of the wall.
+                    </li>
+                    <li>Explain how you decide whether to use sine, cosine or tangent.</li>
+                </ol>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

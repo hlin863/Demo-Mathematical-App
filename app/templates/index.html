@@ -73,6 +73,41 @@
             </div>
         </section>
 
+        <section class="panel chat-panel" id="local-model-chat">
+            <div class="chat-heading">
+                <div>
+                    <p class="eyebrow">Local AI support</p>
+                    <h2>Ask a local Ollama model</h2>
+                    <p>Choose a local model and ask for hints, explanations, checking steps, or GCSE-style help.</p>
+                </div>
+                <label class="model-picker">Model
+                    <select id="modelSelect" aria-label="Choose local Ollama model">
+                        <option value="">Loading local models...</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="chatStatus" class="chat-status" aria-live="polite">
+                Checking local Ollama models...
+            </div>
+
+            <div id="chatMessages" class="chat-messages" aria-live="polite">
+                <div class="chat-message assistant-message">
+                    <strong>Maths assistant</strong>
+                    <p>Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking your working.</p>
+                </div>
+            </div>
+
+            <form id="chatForm" class="chat-form">
+                <textarea id="chatInput" rows="3"
+                    placeholder="Example: Why do we use tangent when the height is unknown?" required></textarea>
+                <div class="chat-actions">
+                    <button id="sendChatBtn" type="submit">Ask model</button>
+                    <button id="clearChatBtn" class="secondary-btn" type="button">Clear chat</button>
+                </div>
+            </form>
+        </section>
+
         <section class="panel practice-panel" id="gcse-practice"
             data-time-limit="{{ practice.time_limit_minutes }}"
             data-answer="{{ '%.1f'|format(practice.answer) }}"

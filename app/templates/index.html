@@ -77,8 +77,6 @@
             <div class="chat-heading">
                 <div>
                     <p class="eyebrow">Local AI support</p>
-                    <h2>Ask a local Ollama model</h2>
-                    <p>Choose a local model, keep separate chat threads, and rename each conversation when needed.</p>
                 </div>
                 <label class="model-picker">Answer model
                     <select id="modelSelect" aria-label="Choose local Ollama model">
@@ -96,7 +94,6 @@
                     <div class="sidebar-heading">
                         <div>
                             <h3>Chats</h3>
-                            <small>Sorted by latest update</small>
                         </div>
                         <button id="newChatBtn" class="small-btn" type="button">New chat</button>
                     </div>
@@ -114,14 +111,16 @@
                     <div id="chatMessages" class="chat-messages" aria-live="polite">
                         <div class="chat-message assistant-message">
                             <strong>Maths assistant</strong>
-                            <p>Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking your
+                            <p>Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking
+                                your
                                 working.</p>
                         </div>
                     </div>
 
                     <form id="chatForm" class="chat-form">
                         <textarea id="chatInput" rows="3"
-                            placeholder="Example: Why do we use tangent when the height is unknown?" required></textarea>
+                            placeholder="Example: Why do we use tangent when the height is unknown?"
+                            required></textarea>
                         <div class="chat-actions">
                             <button id="sendChatBtn" type="submit">Ask model</button>
                             <button id="clearChatBtn" class="secondary-btn" type="button">Clear this chat</button>

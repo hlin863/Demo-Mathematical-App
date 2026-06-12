@@ -31,12 +31,148 @@ const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 const sendChatBtn = document.getElementById("sendChatBtn");
 const clearChatBtn = document.getElementById("clearChatBtn");
+const newChatBtn = document.getElementById("newChatBtn");
+const chatList = document.getElementById("chatList");
+const chatTitleInput = document.getElementById("chatTitleInput");
+const chatUpdatedAt = document.getElementById("chatUpdatedAt");
 
-let chatHistory = [];
+const CHAT_STORAGE_KEY = "ks4_trigonometry_ollama_chats_v1";
+const DEFAULT_CHAT_TITLE = "New chat";
+const DEFAULT_ASSISTANT_GREETING = "Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking your working.";
+
+let chats = [];
+let activeChatId = null;
+let titleModel = "llama3.2";
+
+function createChatId() {
+    return `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function currentTimestamp() {
+    return new Date().toISOString();
+}
+
+function formatChatTime(isoTimestamp) {
+    if (!isoTimestamp) {
+        return "No update time";
+    }
+
+    const date = new Date(isoTimestamp);
+    if (Number.isNaN(date.getTime())) {
+        return "No update time";
+    }
+
+    return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(date);
+}
 
 function setChatStatus(message, isWarning = false) {
     chatStatus.textContent = message;
     chatStatus.classList.toggle("chat-warning", isWarning);
+}
+
+function getActiveChat() {
+    return chats.find((chat) => chat.id === activeChatId) || null;
+}
+
+function createEmptyChat(title = DEFAULT_CHAT_TITLE) {
+    const timestamp = currentTimestamp();
+    return {
+        id: createChatId(),
+        title,
+        messages: [],
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        model: modelSelect.value || "",
+        titleGenerated: false,
+        titleEdited: false
+    };
+}
+
+function normaliseChat(rawChat) {
+    const timestamp = currentTimestamp();
+    return {
+        id: typeof rawChat.id === "string" ? rawChat.id : createChatId(),
+        title: typeof rawChat.title === "string" && rawChat.title.trim() ? rawChat.title.trim() : DEFAULT_CHAT_TITLE,
+        messages: Array.isArray(rawChat.messages)
+            ? rawChat.messages.filter((message) => (
+                message
+                && ["user", "assistant"].includes(message.role)
+                && typeof message.content === "string"
+                && message.content.trim()
+            ))
+            : [],
+        createdAt: rawChat.createdAt || timestamp,
+        updatedAt: rawChat.updatedAt || rawChat.createdAt || timestamp,
+        model: rawChat.model || "",
+        titleGenerated: Boolean(rawChat.titleGenerated),
+        titleEdited: Boolean(rawChat.titleEdited)
+    };
+}
+
+function saveChats() {
+    try {
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ chats, activeChatId }));
+    } catch (error) {
+        setChatStatus("Unable to save chat history in this browser.", true);
+    }
+}
+
+function loadChats() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "{}");
+        chats = Array.isArray(saved.chats) ? saved.chats.map(normaliseChat) : [];
+        activeChatId = saved.activeChatId || null;
+    } catch (error) {
+        chats = [];
+        activeChatId = null;
+    }
+
+    if (!chats.length) {
+        const firstChat = createEmptyChat();
+        chats = [firstChat];
+        activeChatId = firstChat.id;
+        saveChats();
+    }
+
+    if (!getActiveChat()) {
+        activeChatId = getSortedChats()[0].id;
+        saveChats();
+    }
+}
+
+function getSortedChats() {
+    return [...chats].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+}
+
+function renderChatList() {
+    chatList.innerHTML = "";
+
+    getSortedChats().forEach((chat) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = `chat-list-item ${chat.id === activeChatId ? "active-chat" : ""}`;
+        item.addEventListener("click", () => selectChat(chat.id));
+
+        const title = document.createElement("strong");
+        title.textContent = chat.title || DEFAULT_CHAT_TITLE;
+
+        const meta = document.createElement("span");
+        meta.textContent = formatChatTime(chat.updatedAt);
+
+        const count = document.createElement("small");
+        const userMessageCount = chat.messages.filter((message) => message.role === "user").length;
+        count.textContent = `${userMessageCount} question${userMessageCount === 1 ? "" : "s"}`;
+
+        item.appendChild(title);
+        item.appendChild(meta);
+        item.appendChild(count);
+        chatList.appendChild(item);
+    });
 }
 
 function appendChatMessage(role, content) {
@@ -55,18 +191,123 @@ function appendChatMessage(role, content) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function resetChatMessages() {
+function renderActiveChat() {
+    const chat = getActiveChat();
+    if (!chat) {
+        return;
+    }
+
+    chatTitleInput.value = chat.title || DEFAULT_CHAT_TITLE;
+    chatUpdatedAt.textContent = `Latest update: ${formatChatTime(chat.updatedAt)}`;
+
+    if (chat.model && [...modelSelect.options].some((option) => option.value === chat.model)) {
+        modelSelect.value = chat.model;
+    }
+
     chatMessages.innerHTML = "";
-    appendChatMessage(
-        "assistant",
-        "Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking your working."
-    );
+    if (!chat.messages.length) {
+        appendChatMessage("assistant", DEFAULT_ASSISTANT_GREETING);
+    } else {
+        chat.messages.forEach((message) => appendChatMessage(message.role, message.content));
+    }
+
+    renderChatList();
+}
+
+function selectChat(chatId) {
+    activeChatId = chatId;
+    saveChats();
+    renderActiveChat();
+}
+
+function startNewChat() {
+    const chat = createEmptyChat();
+    chats.push(chat);
+    activeChatId = chat.id;
+    saveChats();
+    renderActiveChat();
+    setChatStatus("Started a new chat. The first question will be named by llama3.2.");
+}
+
+function addMessageToActiveChat(role, content) {
+    const chat = getActiveChat();
+    if (!chat) {
+        return null;
+    }
+
+    chat.messages.push({ role, content });
+    chat.updatedAt = currentTimestamp();
+    saveChats();
+    renderActiveChat();
+    return chat;
+}
+
+function fallbackTitleFromMessage(message) {
+    const words = message.match(/[A-Za-z0-9]+/g) || [];
+    if (!words.length) {
+        return "New Maths Chat";
+    }
+
+    return words.slice(0, 5).map((word) => word[0].toUpperCase() + word.slice(1)).join(" ").slice(0, 60);
+}
+
+async function generateChatTitleIfNeeded(chatId, firstMessage) {
+    const chat = chats.find((candidate) => candidate.id === chatId);
+    if (!chat || chat.titleGenerated || chat.titleEdited) {
+        return;
+    }
+
+    setChatStatus(`Naming this chat with ${titleModel}...`);
+
+    try {
+        const response = await fetch("/api/chat-title", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: firstMessage })
+        });
+        const data = await response.json();
+        const liveChat = chats.find((candidate) => candidate.id === chatId);
+
+        if (!liveChat || liveChat.titleEdited) {
+            return;
+        }
+
+        liveChat.title = data.title || fallbackTitleFromMessage(firstMessage);
+        liveChat.titleGenerated = true;
+        liveChat.updatedAt = currentTimestamp();
+        saveChats();
+
+        if (activeChatId === chatId) {
+            renderActiveChat();
+        } else {
+            renderChatList();
+        }
+
+        if (data.source === "fallback") {
+            setChatStatus("Chat name created with fallback naming because llama3.2 was not available.", true);
+        } else {
+            setChatStatus(`Chat name generated by ${data.source}.`);
+        }
+    } catch (error) {
+        const liveChat = chats.find((candidate) => candidate.id === chatId);
+        if (!liveChat || liveChat.titleEdited) {
+            return;
+        }
+
+        liveChat.title = fallbackTitleFromMessage(firstMessage);
+        liveChat.titleGenerated = true;
+        liveChat.updatedAt = currentTimestamp();
+        saveChats();
+        renderActiveChat();
+        setChatStatus("Chat name created with fallback naming.", true);
+    }
 }
 
 async function loadOllamaModels() {
     try {
         const response = await fetch("/api/ollama-models");
         const data = await response.json();
+        titleModel = data.title_model || "llama3.2";
 
         modelSelect.innerHTML = "";
         data.models.forEach((modelName) => {
@@ -79,18 +320,25 @@ async function loadOllamaModels() {
             modelSelect.appendChild(option);
         });
 
+        const chat = getActiveChat();
+        if (chat && chat.model && [...modelSelect.options].some((option) => option.value === chat.model)) {
+            modelSelect.value = chat.model;
+        }
+
         if (data.source === "fallback") {
             setChatStatus(
                 "Using fallback model choices. Start Ollama and pull a listed model before asking a question.",
                 true
             );
         } else {
-            setChatStatus(`Connected to local Ollama at ${data.ollama_base_url}.`);
+            setChatStatus(`Connected to local Ollama at ${data.ollama_base_url}. Titles use ${titleModel}.`);
         }
     } catch (error) {
         modelSelect.innerHTML = "<option value='llama3.2'>llama3.2</option>";
         setChatStatus("Unable to load local models. Check that the Flask app is running correctly.", true);
     }
+
+    renderActiveChat();
 }
 
 chatForm.addEventListener("submit", async (event) => {
@@ -104,39 +352,57 @@ chatForm.addEventListener("submit", async (event) => {
         return;
     }
 
-    appendChatMessage("user", message);
-    chatHistory.push({ role: "user", content: message });
+    let chat = getActiveChat();
+    if (!chat) {
+        startNewChat();
+        chat = getActiveChat();
+    }
+
+    const isFirstUserMessage = chat.messages.every((item) => item.role !== "user");
+
+    chat.model = model;
+    addMessageToActiveChat("user", message);
+
+    if (isFirstUserMessage) {
+        generateChatTitleIfNeeded(chat.id, message);
+    }
+
     chatInput.value = "";
     sendChatBtn.disabled = true;
     sendChatBtn.textContent = "Thinking...";
     setChatStatus(`Asking ${model}...`);
 
     try {
+        const currentChat = getActiveChat();
         const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 model,
                 message: "",
-                messages: chatHistory.slice(-8)
+                messages: currentChat.messages.slice(-8)
             })
         });
         const data = await response.json();
 
         if (!response.ok) {
             const errorMessage = data.error || "Unable to get a model response.";
-            appendChatMessage("assistant", errorMessage);
+            addMessageToActiveChat("assistant", errorMessage);
             setChatStatus(errorMessage, true);
             return;
         }
 
-        appendChatMessage("assistant", data.reply);
-        chatHistory.push({ role: "assistant", content: data.reply });
-        chatHistory = chatHistory.slice(-8);
+        addMessageToActiveChat("assistant", data.reply);
+        const answeredChat = getActiveChat();
+        if (answeredChat) {
+            answeredChat.model = data.model;
+            saveChats();
+            renderChatList();
+        }
         setChatStatus(`Answered by ${data.model}.`);
     } catch (error) {
         const errorMessage = "Unable to contact the chat endpoint. Check the Flask server and try again.";
-        appendChatMessage("assistant", errorMessage);
+        addMessageToActiveChat("assistant", errorMessage);
         setChatStatus(errorMessage, true);
     } finally {
         sendChatBtn.disabled = false;
@@ -144,12 +410,52 @@ chatForm.addEventListener("submit", async (event) => {
     }
 });
 
-clearChatBtn.addEventListener("click", () => {
-    chatHistory = [];
-    resetChatMessages();
-    setChatStatus("Chat cleared. Choose a model and ask a new question.");
+chatTitleInput.addEventListener("input", () => {
+    const chat = getActiveChat();
+    if (!chat) {
+        return;
+    }
+
+    chat.title = chatTitleInput.value.trim() || DEFAULT_CHAT_TITLE;
+    chat.titleEdited = true;
+    chat.updatedAt = currentTimestamp();
+    saveChats();
+    renderChatList();
+    chatUpdatedAt.textContent = `Latest update: ${formatChatTime(chat.updatedAt)}`;
 });
 
+modelSelect.addEventListener("change", () => {
+    const chat = getActiveChat();
+    if (!chat) {
+        return;
+    }
+
+    chat.model = modelSelect.value;
+    chat.updatedAt = currentTimestamp();
+    saveChats();
+    renderChatList();
+    chatUpdatedAt.textContent = `Latest update: ${formatChatTime(chat.updatedAt)}`;
+});
+
+clearChatBtn.addEventListener("click", () => {
+    const chat = getActiveChat();
+    if (!chat) {
+        return;
+    }
+
+    chat.messages = [];
+    chat.title = DEFAULT_CHAT_TITLE;
+    chat.titleGenerated = false;
+    chat.titleEdited = false;
+    chat.updatedAt = currentTimestamp();
+    saveChats();
+    renderActiveChat();
+    setChatStatus("This chat was cleared. The next first question will generate a new name.");
+});
+
+newChatBtn.addEventListener("click", startNewChat);
+
+loadChats();
 loadOllamaModels();
 
 const practicePanel = document.getElementById("gcse-practice");

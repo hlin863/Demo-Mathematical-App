@@ -153,14 +153,45 @@ function getSortedChats() {
     return [...chats].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 }
 
+function deleteChat(chatId) {
+    const chat = getChatById(chatId);
+    if (!chat) {
+        return;
+    }
+
+    const title = chat.title || DEFAULT_CHAT_TITLE;
+    const shouldDelete = window.confirm(`Delete "${title}"? This cannot be undone.`);
+    if (!shouldDelete) {
+        return;
+    }
+
+    const wasActiveChat = chatId === activeChatId;
+    chats = chats.filter((candidate) => candidate.id !== chatId);
+
+    if (!chats.length) {
+        const replacementChat = createEmptyChat();
+        chats = [replacementChat];
+        activeChatId = replacementChat.id;
+    } else if (wasActiveChat || !getActiveChat()) {
+        activeChatId = getSortedChats()[0].id;
+    }
+
+    saveChats();
+    renderActiveChat();
+    setChatStatus(`Deleted chat: ${title}.`);
+}
+
 function renderChatList() {
     chatList.innerHTML = "";
 
     getSortedChats().forEach((chat) => {
-        const item = document.createElement("button");
-        item.type = "button";
+        const item = document.createElement("article");
         item.className = `chat-list-item ${chat.id === activeChatId ? "active-chat" : ""}`;
-        item.addEventListener("click", () => selectChat(chat.id));
+
+        const selectButton = document.createElement("button");
+        selectButton.type = "button";
+        selectButton.className = "chat-select-btn";
+        selectButton.addEventListener("click", () => selectChat(chat.id));
 
         const title = document.createElement("strong");
         title.textContent = chat.title || DEFAULT_CHAT_TITLE;
@@ -172,9 +203,26 @@ function renderChatList() {
         const userMessageCount = chat.messages.filter((message) => message.role === "user").length;
         count.textContent = `${userMessageCount} question${userMessageCount === 1 ? "" : "s"}`;
 
-        item.appendChild(title);
-        item.appendChild(meta);
-        item.appendChild(count);
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "chat-delete-btn";
+        deleteButton.setAttribute("aria-label", `Delete chat: ${chat.title || DEFAULT_CHAT_TITLE}`);
+        deleteButton.title = "Delete chat";
+        deleteButton.innerHTML = `
+            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+                <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v9h-2V9Zm4 0h2v9h-2V9ZM7 9h2v9h6V9h2v11H7V9Z"></path>
+            </svg>
+        `;
+        deleteButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            deleteChat(chat.id);
+        });
+
+        selectButton.appendChild(title);
+        selectButton.appendChild(meta);
+        selectButton.appendChild(count);
+        item.appendChild(selectButton);
+        item.appendChild(deleteButton);
         chatList.appendChild(item);
     });
 }

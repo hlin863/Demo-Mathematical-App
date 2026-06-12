@@ -1,6 +1,7 @@
 import json
 import math
 import os
+import re
 import urllib.error
 import urllib.request
 
@@ -18,11 +19,19 @@ DEFAULT_OLLAMA_MODELS = [
     "tinyllama",
 ]
 
+CHAT_TITLE_MODEL = "llama3.2"
+
 MATHS_CHAT_SYSTEM_PROMPT = """
 You are a supportive KS4 mathematics teaching assistant for a right-angled trigonometry lesson.
 Help pupils understand sine, cosine and tangent without simply doing every step for them first.
 Use clear British English, short explanations, and GCSE-friendly working.
 When a pupil asks for an answer, explain the method and include the final answer with units where possible.
+""".strip()
+
+CHAT_TITLE_SYSTEM_PROMPT = """
+You name maths help chats for a KS4 trigonometry learning app.
+Return one concise title only, using 3 to 6 words.
+Do not use quotation marks, emojis, punctuation-heavy titles, or explanations.
 """.strip()
 
 
@@ -62,6 +71,33 @@ def get_available_ollama_models():
         pass
 
     return DEFAULT_OLLAMA_MODELS, "fallback"
+
+
+def clean_chat_title(title):
+    """Normalise a model-generated chat title for safe display."""
+    cleaned = re.sub(r"[\r\n\t]+", " ", title).strip()
+    cleaned = cleaned.strip(" '\"`“”‘’.,:;!-_")
+    cleaned = re.sub(r"\s+", " ", cleaned)
+
+    if not cleaned:
+        return "Trigonometry Help"
+
+    words = cleaned.split()
+    if len(words) > 8:
+        cleaned = " ".join(words[:8])
+
+    return cleaned[:60]
+
+
+def fallback_chat_title(message):
+    """Create a deterministic title if llama3.2 cannot generate one."""
+    words = re.findall(r"[A-Za-z0-9]+", message)
+    if not words:
+        return "New Maths Chat"
+
+    title_words = words[:5]
+    title = " ".join(word.capitalize() for word in title_words)
+    return title[:60]
 
 
 @main_bp.route("/")
@@ -142,8 +178,41 @@ def ollama_models():
             "default": models[0] if models else "",
             "source": source,
             "ollama_base_url": get_ollama_base_url(),
+            "title_model": CHAT_TITLE_MODEL,
         }
     )
+
+
+@main_bp.route("/api/chat-title", methods=["POST"])
+def chat_title():
+    """Use llama3.2 to create a concise title for a new chat."""
+    data = request.get_json(silent=True) or {}
+    message = str(data.get("message", "")).strip()
+
+    if not message:
+        return jsonify({"title": "New Maths Chat", "source": "fallback"})
+
+    payload = {
+        "model": CHAT_TITLE_MODEL,
+        "messages": [
+            {"role": "system", "content": CHAT_TITLE_SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": f"Name this chat based on the first pupil question: {message}",
+            },
+        ],
+        "stream": False,
+        "options": {
+            "temperature": 0.2,
+        },
+    }
+
+    try:
+        data = call_ollama("/api/chat", payload=payload, method="POST", timeout=30)
+        title = clean_chat_title(data.get("message", {}).get("content", ""))
+        return jsonify({"title": title, "source": CHAT_TITLE_MODEL})
+    except (TimeoutError, urllib.error.URLError, json.JSONDecodeError):
+        return jsonify({"title": fallback_chat_title(message), "source": "fallback"})
 
 
 @main_bp.route("/api/chat", methods=["POST"])

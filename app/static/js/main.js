@@ -24,6 +24,134 @@ btn.addEventListener("click", async () => {
     }
 });
 
+const modelSelect = document.getElementById("modelSelect");
+const chatStatus = document.getElementById("chatStatus");
+const chatMessages = document.getElementById("chatMessages");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const sendChatBtn = document.getElementById("sendChatBtn");
+const clearChatBtn = document.getElementById("clearChatBtn");
+
+let chatHistory = [];
+
+function setChatStatus(message, isWarning = false) {
+    chatStatus.textContent = message;
+    chatStatus.classList.toggle("chat-warning", isWarning);
+}
+
+function appendChatMessage(role, content) {
+    const messageCard = document.createElement("div");
+    messageCard.className = `chat-message ${role === "user" ? "user-message" : "assistant-message"}`;
+
+    const speaker = document.createElement("strong");
+    speaker.textContent = role === "user" ? "You" : "Maths assistant";
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent = content;
+
+    messageCard.appendChild(speaker);
+    messageCard.appendChild(paragraph);
+    chatMessages.appendChild(messageCard);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function resetChatMessages() {
+    chatMessages.innerHTML = "";
+    appendChatMessage(
+        "assistant",
+        "Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking your working."
+    );
+}
+
+async function loadOllamaModels() {
+    try {
+        const response = await fetch("/api/ollama-models");
+        const data = await response.json();
+
+        modelSelect.innerHTML = "";
+        data.models.forEach((modelName) => {
+            const option = document.createElement("option");
+            option.value = modelName;
+            option.textContent = modelName;
+            if (modelName === data.default) {
+                option.selected = true;
+            }
+            modelSelect.appendChild(option);
+        });
+
+        if (data.source === "fallback") {
+            setChatStatus(
+                "Using fallback model choices. Start Ollama and pull a listed model before asking a question.",
+                true
+            );
+        } else {
+            setChatStatus(`Connected to local Ollama at ${data.ollama_base_url}.`);
+        }
+    } catch (error) {
+        modelSelect.innerHTML = "<option value='llama3.2'>llama3.2</option>";
+        setChatStatus("Unable to load local models. Check that the Flask app is running correctly.", true);
+    }
+}
+
+chatForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = chatInput.value.trim();
+    const model = modelSelect.value;
+
+    if (!message) {
+        setChatStatus("Type a question before asking the model.", true);
+        return;
+    }
+
+    appendChatMessage("user", message);
+    chatHistory.push({ role: "user", content: message });
+    chatInput.value = "";
+    sendChatBtn.disabled = true;
+    sendChatBtn.textContent = "Thinking...";
+    setChatStatus(`Asking ${model}...`);
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model,
+                message: "",
+                messages: chatHistory.slice(-8)
+            })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorMessage = data.error || "Unable to get a model response.";
+            appendChatMessage("assistant", errorMessage);
+            setChatStatus(errorMessage, true);
+            return;
+        }
+
+        appendChatMessage("assistant", data.reply);
+        chatHistory.push({ role: "assistant", content: data.reply });
+        chatHistory = chatHistory.slice(-8);
+        setChatStatus(`Answered by ${data.model}.`);
+    } catch (error) {
+        const errorMessage = "Unable to contact the chat endpoint. Check the Flask server and try again.";
+        appendChatMessage("assistant", errorMessage);
+        setChatStatus(errorMessage, true);
+    } finally {
+        sendChatBtn.disabled = false;
+        sendChatBtn.textContent = "Ask model";
+    }
+});
+
+clearChatBtn.addEventListener("click", () => {
+    chatHistory = [];
+    resetChatMessages();
+    setChatStatus("Chat cleared. Choose a model and ask a new question.");
+});
+
+loadOllamaModels();
+
 const practicePanel = document.getElementById("gcse-practice");
 const timerDisplay = document.getElementById("practiceTimer");
 const startPracticeBtn = document.getElementById("startPracticeBtn");

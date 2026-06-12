@@ -280,6 +280,102 @@ textarea {
     color: #724600;
 }
 
+.chat-workspace {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.32fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: stretch;
+}
+
+.chat-sidebar,
+.chat-main {
+    border-radius: 22px;
+    background: #ffffff;
+    border: 1px solid rgba(17, 137, 154, 0.15);
+}
+
+.chat-sidebar {
+    padding: 16px;
+}
+
+.sidebar-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.sidebar-heading h3 {
+    margin: 0;
+}
+
+.small-btn {
+    padding: 9px 13px;
+    font-size: 0.85rem;
+}
+
+.chat-list {
+    display: grid;
+    gap: 10px;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.chat-list-item {
+    width: 100%;
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--soft);
+    color: var(--navy);
+    text-align: left;
+    font-weight: 700;
+}
+
+.chat-list-item strong,
+.chat-list-item span,
+.chat-list-item small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-list-item span,
+.chat-list-item small {
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.active-chat {
+    outline: 3px solid rgba(244, 154, 36, 0.45);
+    background: #fff8eb;
+}
+
+.chat-main {
+    min-width: 0;
+    padding: 18px;
+}
+
+.chat-title-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.chat-title-field {
+    margin: 0;
+}
+
+.chat-updated-at {
+    padding-bottom: 13px;
+    color: var(--muted);
+    font-weight: 800;
+    white-space: nowrap;
+}
+
 .chat-messages {
     display: flex;
     flex-direction: column;
@@ -369,7 +465,9 @@ textarea {
 }
 
 button:disabled,
-input:disabled {
+input:disabled,
+select:disabled,
+textarea:disabled {
     cursor: not-allowed;
     opacity: 0.6;
 }
@@ -388,17 +486,28 @@ footer {
 
     .hero-grid,
     .two-col,
-    .timeline {
+    .timeline,
+    .chat-workspace,
+    .chat-title-row {
         grid-template-columns: 1fr;
     }
 
     .practice-heading,
-    .chat-heading {
+    .chat-heading,
+    .sidebar-heading {
         flex-direction: column;
     }
 
     .model-picker {
         min-width: 100%;
+    }
+
+    .chat-list {
+        max-height: 260px;
+    }
+
+    .chat-updated-at {
+        padding-bottom: 0;
     }
 
     .chat-message {

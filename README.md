@@ -13,6 +13,8 @@ A small structured Flask web learning application for a KS4 lesson on right-angl
 - Interactive trigonometry height calculator.
 - Timed GCSE-style independent practice question with answer checking.
 - Local AI chat panel that lets the user choose an installed Ollama model for maths support.
+- Chat history side panel sorted by latest update date and time.
+- Automatic first-chat naming with `llama3.2`, plus editable chat names stored in the browser.
 
 ## Setup
 
@@ -31,7 +33,7 @@ http://127.0.0.1:5000/
 
 ## Optional: local Ollama chat setup
 
-Install and start Ollama, then pull at least one local chat model:
+Install and start Ollama, then pull at least one local chat model. Pull `llama3.2` if you want automatic chat-title generation:
 
 ```bash
 ollama pull llama3.2
@@ -44,6 +46,10 @@ The app reads installed local models from:
 ```text
 http://127.0.0.1:11434/api/tags
 ```
+
+The answer model is selected in the page dropdown. The chat title is generated separately using `llama3.2` from the first user question. If `llama3.2` is unavailable, the app falls back to a simple deterministic title.
+
+Chat conversations are saved in browser `localStorage`, so they persist after refresh on the same browser and device without requiring a database.
 
 If your Ollama server uses another address, set `OLLAMA_BASE_URL` before running Flask:
 

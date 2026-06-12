@@ -325,27 +325,65 @@ textarea {
 .chat-list-item {
     width: 100%;
     display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: stretch;
+    padding: 0;
+    border-radius: 16px;
+    background: var(--soft);
+    color: var(--navy);
+    font-weight: 700;
+}
+
+.chat-select-btn {
+    width: 100%;
+    display: grid;
     gap: 4px;
     padding: 12px 14px;
     border-radius: 16px;
-    background: var(--soft);
+    background: transparent;
     color: var(--navy);
     text-align: left;
     font-weight: 700;
 }
 
-.chat-list-item strong,
-.chat-list-item span,
-.chat-list-item small {
+.chat-select-btn strong,
+.chat-select-btn span,
+.chat-select-btn small {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.chat-list-item span,
-.chat-list-item small {
+.chat-select-btn span,
+.chat-select-btn small {
     color: var(--muted);
     font-size: 0.86rem;
+}
+
+.chat-delete-btn {
+    width: 44px;
+    min-height: 44px;
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 14px;
+    background: rgba(8, 32, 74, 0.08);
+    color: var(--navy);
+}
+
+.chat-delete-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.chat-delete-btn:hover,
+.chat-delete-btn:focus-visible {
+    background: #fff4e2;
+    color: #724600;
+    outline: 3px solid rgba(244, 154, 36, 0.35);
 }
 
 .active-chat {

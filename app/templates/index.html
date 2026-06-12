@@ -77,7 +77,6 @@
             <div class="chat-heading">
                 <div>
                     <p class="eyebrow">Local AI support</p>
-                    <h2>Ask a local Ollama model</h2>
                     <p>Choose a local model and ask for hints, explanations, checking steps, or GCSE-style help.</p>
                 </div>
                 <label class="model-picker">Model
@@ -94,7 +93,8 @@
             <div id="chatMessages" class="chat-messages" aria-live="polite">
                 <div class="chat-message assistant-message">
                     <strong>Maths assistant</strong>
-                    <p>Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking your working.</p>
+                    <p>Ask me about choosing sine, cosine or tangent, finding the opposite side, or checking your
+                        working.</p>
                 </div>
             </div>
 
@@ -108,10 +108,8 @@
             </form>
         </section>
 
-        <section class="panel practice-panel" id="gcse-practice"
-            data-time-limit="{{ practice.time_limit_minutes }}"
-            data-answer="{{ '%.1f'|format(practice.answer) }}"
-            data-unit="{{ practice.unit }}">
+        <section class="panel practice-panel" id="gcse-practice" data-time-limit="{{ practice.time_limit_minutes }}"
+            data-answer="{{ '%.1f'|format(practice.answer) }}" data-unit="{{ practice.unit }}">
             <div class="practice-heading">
                 <div>
                     <p class="eyebrow">Timed independent practice</p>
